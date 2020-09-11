@@ -5,11 +5,13 @@
  * which makes it higher in priority.
  */
 
-.wp-block-cgb-block-myblock  {
-  background: $green;
-  border: 0.2rem solid $black;
-  color: $black;
-  margin: 0 auto;
-  max-width: 740px;
-  padding: 2rem;
+.sample-card {
+
+	.card__title {
+		font-size: 34px;
+	}
+
+	.card__body {
+		padding: 0 12px;
+	}
 }

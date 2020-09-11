@@ -9,8 +9,20 @@
 import './editor.scss';
 import './style.scss';
 
+import { RichText, MediaUpload, MediaUploadCheck  } from '@wordpress/block-editor';
+
 const { __ } = wp.i18n; // Import __() from wp.i18n
 const { registerBlockType } = wp.blocks; // Import registerBlockType() from wp.blocks
+const { InspectorControls } = wp.editor;
+const { PanelBody, Button } = wp.components;
+const { Fragment } = wp.element;
+
+const ALLOWED_MEDIA_TYPES = [ 'audio' ];
+
+const imageStyle = {
+	width: '100%',
+	height: '280px',
+};
 
 /**
  * Register: aa Gutenberg Block.
@@ -25,74 +37,119 @@ const { registerBlockType } = wp.blocks; // Import registerBlockType() from wp.b
  * @return {?WPBlock}          The block, if it has been successfully
  *                             registered; otherwise `undefined`.
  */
-registerBlockType( 'cgb/block-myblock', {
+registerBlockType( 'cgb/card', {
 	// Block name. Block names must be string that contains a namespace prefix. Example: my-plugin/my-custom-block.
-	title: __( 'myblock - CGB Block' ), // Block title.
-	icon: 'shield', // Block icon from Dashicons → https://developer.wordpress.org/resource/dashicons/.
+	title: __( 'Simple Card' ), // Block title.
+	icon: 'smiley', // Block icon from Dashicons → https://developer.wordpress.org/resource/dashicons/.
 	category: 'common', // Block category — Group blocks together based on common traits E.g. common, formatting, layout widgets, embed.
 	keywords: [
 		__( 'myblock — CGB Block' ),
 		__( 'CGB Example' ),
 		__( 'create-guten-block' ),
 	],
+	attributes: {
+        title: {
+            type: 'string',
+            source: 'html',
+            selector: '.card__title',
+        },
+        description: {
+            type: 'string',
+            source: 'html',
+            selector: '.card__description',
+		},
+		image: {
+            type: 'string',
+			default: 'https://www.w3schools.com/w3css/img_lights.jpg',
+		},
+    },
 
-	/**
-	 * The edit function describes the structure of your block in the context of the editor.
-	 * This represents what the editor will render when the block is used.
-	 *
-	 * The "edit" property must be a valid function.
-	 *
-	 * @link https://wordpress.org/gutenberg/handbook/block-api/block-edit-save/
-	 *
-	 * @param {Object} props Props.
-	 * @returns {Mixed} JSX Component.
-	 */
-	edit: ( props ) => {
-		// Creates a <p class='wp-block-cgb-block-myblock'></p>.
+	edit: ({ attributes, setAttributes }) => {
+		const { title, description, image } = attributes;
+
+		const onTitleChange = title => {
+			setAttributes( { title } );
+		};
+		const onDescriptionChange = description => {
+			setAttributes( { description } );
+		};
+		const onSetImage = media => {
+			setAttributes( { image: media.sizes.full.url } );
+		};
+
 		return (
-			<div className={ props.className }>
-				<p>— Hello from the backend.</p>
-				<p>
-					CGB BLOCK: <code>myblock</code> is a new Gutenberg block
-				</p>
-				<p>
-					It was created via{ ' ' }
-					<code>
-						<a href="https://github.com/ahmadawais/create-guten-block">
-							create-guten-block
-						</a>
-					</code>.
-				</p>
-			</div>
+			<Fragment>
+				<InspectorControls>
+					<PanelBody>
+					<MediaUploadCheck>
+						<MediaUpload
+							onSelect={onSetImage}
+							allowedTypes={ ALLOWED_MEDIA_TYPES }
+							// value={ mediaId }
+							render={ ( { open } ) => (
+								<Button onClick={ open }>
+									Open Media Library
+								</Button>
+							) }
+						/>
+					</MediaUploadCheck>
+					</PanelBody>
+				</InspectorControls>
+
+				<div className="sample-card">
+					<img className="card__image" src={image} style={imageStyle} />
+					<div className="card__body">
+						<RichText
+							className="card__title"
+							tagName="div" // The tag here is the element output and editable in the admin
+							value={ title } // Any existing content, either from the database or an attribute default
+							// formattingControls={ [ 'bold', 'italic' ] } // Allow the content to be made bold or italic, but do not allow other formatting options
+							onChange={onTitleChange} // Store updated content as a block attribute
+							placeholder={ __( 'Card Title...' ) } // Display this text before any content has been added by the user
+							/>
+						<RichText
+							className="card__description"
+							tagName="div" // The tag here is the element output and editable in the admin
+							value={ description } // Any existing content, either from the database or an attribute default
+							onChange={onDescriptionChange} // Store updated content as a block attribute
+							placeholder={ __( 'Card Description...' ) } // Display this text before any content has been added by the user
+							/>
+						<div className="card__social-icons">
+							<span class="dashicons dashicons-twitter"></span>
+							<span class="dashicons dashicons-facebook"></span>
+							<span class="dashicons dashicons-google"></span>
+							<span class="dashicons dashicons-instagram"></span>
+						</div>
+					</div>
+				</div>
+			</Fragment>
 		);
 	},
 
-	/**
-	 * The save function defines the way in which the different attributes should be combined
-	 * into the final markup, which is then serialized by Gutenberg into post_content.
-	 *
-	 * The "save" property must be specified and must be a valid function.
-	 *
-	 * @link https://wordpress.org/gutenberg/handbook/block-api/block-edit-save/
-	 *
-	 * @param {Object} props Props.
-	 * @returns {Mixed} JSX Frontend HTML.
-	 */
-	save: ( props ) => {
+	save: ({ attributes }) => {
+		const { title, description, image } = attributes;
+
 		return (
-			<div className={ props.className }>
-				<p>— Hello from the frontend.</p>
-				<p>
-					CGB BLOCK: <code>myblock</code> is a new Gutenberg block.
-				</p>
-				<p>
-					It was created via{ ' ' }
-					<code>
-						<a href="https://github.com/ahmadawais/create-guten-block">
-							create-guten-block
-						</a>
-					</code>.
-				</p>
+			<div className="sample-card">
+				<img className="card__image" src={image} style={imageStyle} />
+				<div className="card__body">
+					<RichText.Content
+						className="card__title"
+						tagName="div" // The tag here is the element output and editable in the admin
+						value={ title } // Any existing content, either from the database or an attribute default
+						/>
+					<RichText.Content
+						className="card__description"
+						tagName="div" // The tag here is the element output and editable in the admin
+						value={ description } // Any existing content, either from the database or an attribute default
+						/>
+					<div className="card__social-icons">
+						<span class="dashicons dashicons-twitter"></span>
+						<span class="dashicons dashicons-facebook"></span>
+						<span class="dashicons dashicons-google"></span>
+						<span class="dashicons dashicons-instagram"></span>
+					</div>
+				</div>
 			</div>
 		);
 	},

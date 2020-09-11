@@ -57,11 +57,11 @@ function myblock_cgb_block_assets() { // phpcs:ignore
 	wp_localize_script(
 		'myblock-cgb-block-js',
 		'cgbGlobal', // Array containing dynamic data for a JS Global.
-		[
+		array(
 			'pluginDirPath' => plugin_dir_path( __DIR__ ),
 			'pluginDirUrl'  => plugin_dir_url( __DIR__ ),
 			// Add more data here that you want to access from `cgbGlobal` object.
-		]
+		)
 	);
 
 	/**
@@ -75,7 +75,8 @@ function myblock_cgb_block_assets() { // phpcs:ignore
 	 * @since 1.16.0
 	 */
 	register_block_type(
-		'cgb/block-myblock', array(
+		'cgb/card',
+		array(
 			// Enqueue blocks.style.build.css on both frontend & backend.
 			'style'         => 'myblock-cgb-style-css',
 			// Enqueue blocks.build.js in the editor only.
